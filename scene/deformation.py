@@ -117,7 +117,7 @@ class deform_network(nn.Module):
         time_emb += offset
 
         use_anneal = self.args.use_anneal
-        coef = 1 if not use_anneal else np.clip(iter/1000,0,1) 
+        coef   = 1 if not use_anneal else np.clip(iter/1000,0,1) 
         coef_c = 1 if not use_anneal else np.clip((iter-self.args.deform_from_iter)/1000,0,1)
         coef_o = 1 if not use_anneal else np.clip((iter-self.args.deform_from_iter)/1000,0,1)
         coef_s = 1 if not use_anneal else np.clip((iter-self.args.deform_from_iter)/1000,0,1)

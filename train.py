@@ -339,6 +339,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args(sys.argv[1:])
     args.save_iterations.append(args.iterations)
+    # 加载配置文件
     if args.configs:
         import mmcv
         from utils.params_utils import merge_hparams
