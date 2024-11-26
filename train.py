@@ -280,6 +280,9 @@ def training(dataset, hyper, opt, pipe, testing_iterations, saving_iterations, c
     dataset.model_path = args.model_path
     timer = Timer()
     scene = Scene(dataset, gaussians, shuffle=dataset.shuffle, loader=dataset.loader, duration=hyper.total_num_frames, opt=opt)
+    # print("here")
+    # print(vars(dataset))
+    # print("end")
     timer.start()
     
     start_time = time()
@@ -341,9 +344,9 @@ if __name__ == "__main__":
     args.save_iterations.append(args.iterations)
     # 加载配置文件
     if args.configs:
-        import mmcv
+        import mmengine
         from utils.params_utils import merge_hparams
-        config = mmcv.Config.fromfile(args.configs)
+        config = mmengine.Config.fromfile(args.configs)
         args = merge_hparams(args, config)
     print("Optimizing " + args.model_path)
 
