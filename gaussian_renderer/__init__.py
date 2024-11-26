@@ -52,7 +52,6 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     # add deformation to each points
     # deformation = pc.get_deformation
 
-    
     means2D = screenspace_points
     opacity = pc._opacity
     shs = pc.get_features
