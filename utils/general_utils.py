@@ -14,7 +14,25 @@ import sys
 from datetime import datetime
 import numpy as np
 import random
+import cv2
 
+def inpaint_rgb(rgb_image, mask):
+    # Convert mask to uint8
+    mask_uint8 = (mask * 255).astype(np.uint8)
+    # Inpaint missing regions
+    inpainted_image = cv2.inpaint(rgb_image, mask_uint8, inpaintRadius=5, flags=cv2.INPAINT_TELEA)
+
+    return inpainted_image
+
+def inpaint_depth(depth_image, mask):
+    # Convert mask to uint8
+    mask_uint8 = (mask * 255).astype(np.uint8)
+
+    # Inpaint missing regions
+    inpainted_depth_image = cv2.inpaint((depth_image).astype(np.uint8), mask_uint8, inpaintRadius=5, flags=cv2.INPAINT_TELEA)
+
+    return inpainted_depth_image 
+    
 def inverse_sigmoid(x):
     return torch.log(x/(1-x))
 

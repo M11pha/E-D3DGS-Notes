@@ -39,19 +39,26 @@ class Scene:
             else:
                 self.loaded_iter = load_iteration
             print("Loading trained model at iteration {}".format(self.loaded_iter))
-
+        # 读取数据集----------------------------------------------------------------------------------------------
         self.train_cameras = {}
         self.test_cameras = {}
         self.video_cameras = {}
         resolution_scales= [1.0]
         raydict = {}
 
-        if loader == "dynerf":
+        if loader == "dynerf": # Neural_3D_Video 数据集
             scene_info = sceneLoadTypeCallbacks["Dynerf"](args.source_path, args.source_path, args.eval, duration=300)
+            
+            # for idx, key in enumerate(scene_info.train_cameras):
+            #     print(key.image_name)
+
         elif loader == "technicolor" or loader == "technicolorvalid" :
             scene_info = sceneLoadTypeCallbacks["Technicolor"](args.source_path, args.images, args.eval, duration=50, testonly=testonly)
         elif loader == "nerfies":
             scene_info = sceneLoadTypeCallbacks["Nerfies"](args.source_path, False, args.eval)
+        # elif loader == "endonerf":
+        #     scene_info = sceneLoadTypeCallbacks["endonerf"](args.source_path)
+        #     print("Found poses_bounds.py and extra marks with EndoNeRf")
         else:
             assert False, "Could not recognize scene type!"
 

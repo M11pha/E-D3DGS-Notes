@@ -270,24 +270,42 @@ def readColmapSceneInfoDynerf(path, images, eval, duration=300, testonly=None):
     near = 0.01
     far = 100
 
+    # cam_infos_unsorted = readColmapCamerasDynerf(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics, images_folder=path, near=near, far=far, duration=duration)    
+    # cam_infos = sorted(cam_infos_unsorted.copy(), key = lambda x : x.image_name)
+    # video_cam_infos = getSpiralColmap(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics,near=near, far=far)
+    # train_cam_infos = [_ for _ in cam_infos if "cam00" not in _.image_name]
+    # test_cam_infos = [_ for _ in cam_infos if "cam00" in _.image_name]
+
+    # 读取所有机位的图像
     cam_infos_unsorted = readColmapCamerasDynerf(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics, images_folder=path, near=near, far=far, duration=duration)    
     cam_infos = sorted(cam_infos_unsorted.copy(), key = lambda x : x.image_name)
-    video_cam_infos = getSpiralColmap(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics,near=near, far=far)
-    train_cam_infos = [_ for _ in cam_infos if "cam00" not in _.image_name]
-    test_cam_infos = [_ for _ in cam_infos if "cam00" in _.image_name]
+    # -------------------------------------
+    # 生成需要选择的图像下标，分为训练集和测试集
+    n_frames   = duration
+    test_every = 8
+    train_idxs = [i for i in range(n_frames) if (i-1) % test_every != 0]
+    test_idxs  = [i for i in range(n_frames) if (i-1) % test_every == 0]
+    # print(test_idxs)
+    video_idxs = [i for i in range(n_frames)]
 
-    uniquecheck = []
-    for cam_info in test_cam_infos:
-        if cam_info.image_name[:5] not in uniquecheck:
-            uniquecheck.append(cam_info.image_name[:5])
-    assert len(uniquecheck) == 1 
+    # video_cam_infos = getSpiralColmap(cam_extrinsics=cam_extrinsics, cam_intrinsics=cam_intrinsics,near=near, far=far)
+    train_cam_infos = [_ for _ in cam_infos if "cam00" in _.image_name and int(_.image_name.split('/')[1].split('.')[0]) in train_idxs]
+    test_cam_infos =  [_ for _ in cam_infos if "cam00" in _.image_name and int(_.image_name.split('/')[1].split('.')[0]) in test_idxs]
+    # -------------------------------------
+
+    # 该部分保证测试相机位与训练相机位没有重合
+    # uniquecheck = []
+    # for cam_info in test_cam_infos:
+    #     if cam_info.image_name[:5] not in uniquecheck:
+    #         uniquecheck.append(cam_info.image_name[:5])
+    # assert len(uniquecheck) == 1 
     
-    sanitycheck = []
-    for cam_info in train_cam_infos:
-        if  cam_info.image_name[:5] not in sanitycheck:
-            sanitycheck.append( cam_info.image_name[:5])
-    for testname in uniquecheck:
-        assert testname not in sanitycheck
+    # sanitycheck = []
+    # for cam_info in train_cam_infos:
+    #     if  cam_info.image_name[:5] not in sanitycheck:
+    #         sanitycheck.append( cam_info.image_name[:5])
+    # for testname in uniquecheck:
+    #     assert testname not in sanitycheck
 
     nerf_normalization = getNerfppNorm(train_cam_infos)
     ply_path = os.path.join(path, "points3D_downsample.ply")
@@ -304,7 +322,7 @@ def readColmapSceneInfoDynerf(path, images, eval, duration=300, testonly=None):
     scene_info = SceneInfo(point_cloud=pcd,
                            train_cameras=train_cam_infos,
                            test_cameras=test_cam_infos,
-                           video_cameras=video_cam_infos,
+                           video_cameras=[],
                            nerf_normalization=nerf_normalization,
                            ply_path=ply_path)
     return scene_info

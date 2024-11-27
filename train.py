@@ -62,7 +62,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     video_cams = None
 
     num_traincams = 1
-    if dataset.loader != 'nerfies': # for multi-view setting
+    if dataset.loader != 'dynerf': # for multi-view setting
         num_traincams = int(len(train_cams) / scene.maxtime)
     
         camera_centers = []
@@ -77,7 +77,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     
     cam_no_list = list(set(c.cam_no for c in train_cams))
     print("train cameras:", cam_no_list)
-    if dataset.loader in ['nerfies']:  # single-view
+    if dataset.loader in ['dynerf']:  # single-view
         loss_list = np.zeros([num_traincams, scene.maxtime]) + 100  # pick frames that have not yet been sampled
     else:  # n3v, technicolor, etc.
         loss_list = np.zeros([max(cam_no_list) + 1, scene.maxtime])
@@ -89,7 +89,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     prev_num_pts = 0
 
     # We sort training images to sample image of the desired camera number and frame.
-    if dataset.loader not in ['nerfies']:
+    if dataset.loader not in ['dynerf']:
         train_cams = sorted(train_cams, key=lambda x: (x.cam_no, x.frame_no))
 
     viewpoint_stack = train_cams
@@ -107,7 +107,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
 
         # opt.batch_size = 2
         ### Instead of the complex process below, simply training on random frames will also work well. If you follow this, comment out the `train_cams` sorting process above.
-        if dataset.loader == 'nerfies':
+        if dataset.loader == 'dynerf':
             frame_set = np.random.choice(range(math.ceil(len(viewpoint_stack) / 2)), size=max(opt.batch_size // 2, 1))
             viewpoint_cams = [viewpoint_stack[(f*2) % scene.maxtime] for f in frame_set] + \
                              [viewpoint_stack[(f*2+1) % scene.maxtime] for f in frame_set]
