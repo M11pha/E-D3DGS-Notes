@@ -449,7 +449,7 @@ def readEndoNeRFInfo(datadir):
                            video_cameras=video_cam_infos,
                            nerf_normalization=nerf_normalization,
                            ply_path=ply_path,
-                           maxtime=maxtime)
+                           )
 
     return scene_info
 

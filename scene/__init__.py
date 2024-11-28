@@ -87,7 +87,7 @@ class Scene:
             print("Loading Training Cameras")  
             if loader in ["technicolorvalid"]:         
                 self.train_cameras[resolution_scale] = [] # no training data
-            elif loader in ["nerfies"]:
+            elif loader in ["nerfies", "endonerf"]:
                 self.train_cameras[resolution_scale] = cameraList_from_camInfosHyper(scene_info.train_cameras, resolution_scale, args)
             else: 
                 self.train_cameras[resolution_scale] = cameraList_from_camInfosv2(scene_info.train_cameras, resolution_scale, args)
@@ -96,13 +96,13 @@ class Scene:
             print("Loading Test Cameras")
             if loader  in ["technicolorvalid", "technicolor", "dynerf", "dynerfvalid"]: # we need gt for metrics
                 self.test_cameras[resolution_scale] = cameraList_from_camInfosv2(scene_info.test_cameras, resolution_scale, args)
-            elif loader in ["nerfies"]:
+            elif loader in ["nerfies", "endonerf"]:
                 self.test_cameras[resolution_scale] = cameraList_from_camInfosHyper(scene_info.test_cameras, resolution_scale, args)
 
             print("Loading Video Cameras")
             if loader  in ["technicolorvalid", "technicolor", "dynerf", "dynerfvalid"]: # we need gt for metrics
                 self.video_cameras[resolution_scale] = cameraList_from_camInfosv2(scene_info.video_cameras, resolution_scale, args)
-            elif loader in ["nerfies"]:
+            elif loader in ["nerfies", "endonerf"]:
                 self.video_cameras[resolution_scale] = cameraList_from_camInfosHyper(scene_info.video_cameras, resolution_scale, args)
 
 

@@ -80,7 +80,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     
     cam_no_list = list(set(c.cam_no for c in train_cams))
     print("train cameras:", cam_no_list)
-    if dataset.loader in ['dynerf']:  # single-view
+    if dataset.loader in ['dynerf'] or ['endonerf']:  # single-view
         loss_list = np.zeros([num_traincams, scene.maxtime]) + 100  # pick frames that have not yet been sampled
     else:  # n3v, technicolor, etc.
         loss_list = np.zeros([max(cam_no_list) + 1, scene.maxtime])
@@ -92,7 +92,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     prev_num_pts = 0
 
     # We sort training images to sample image of the desired camera number and frame.
-    if dataset.loader not in ['dynerf']:
+    if dataset.loader not in ['dynerf' or 'endonerf']:
         train_cams = sorted(train_cams, key=lambda x: (x.cam_no, x.frame_no))
 
     viewpoint_stack = train_cams
@@ -300,9 +300,9 @@ def training(dataset, hyper, opt, pipe, testing_iterations, saving_iterations, c
     timer.start()
     
     start_time = time()
-    scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_iterations,
-                         checkpoint_iterations, checkpoint, debug_from,
-                         gaussians, scene, tb_writer, opt.iterations, timer, start_time)
+    # scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_iterations,
+    #                      checkpoint_iterations, checkpoint, debug_from,
+    #                      gaussians, scene, tb_writer, opt.iterations, timer, start_time)
     end_time = time()
     
     total_time_seconds = end_time - start_time

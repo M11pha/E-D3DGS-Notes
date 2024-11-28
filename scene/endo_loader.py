@@ -61,6 +61,25 @@ def update_extr(c2w, rotation_deg, radii_mm):
         
         return np.linalg.inv(extr) # c2w
     
+# deform     
+# class CameraInfo(NamedTuple):
+#     uid: int
+#     R: np.array
+#     T: np.array
+#     FovY: np.array
+#     FovX: np.array
+#     image: np.array
+#     depth: np.array
+#     image_path: str
+#     image_name: str
+#     width: int
+#     height: int
+#     time : float
+#     mask: np.array
+#     Zfar: float
+#     Znear: float
+
+# ed3dgs
 class CameraInfo(NamedTuple):
     uid: int
     R: np.array
@@ -68,15 +87,18 @@ class CameraInfo(NamedTuple):
     FovY: np.array
     FovX: np.array
     image: np.array
-    depth: np.array
     image_path: str
     image_name: str
     width: int
     height: int
-    time : float
-    mask: np.array
-    Zfar: float
-    Znear: float
+    near: float
+    far: float
+    timestamp: float
+    pose: np.array 
+    hpdirecitons: np.array
+    cxr: float
+    cyr: float
+
 
 def normalize(v):
     """Normalize a vector."""
@@ -128,9 +150,9 @@ class EndoNeRF_Dataset(object):
             cx = 640//2
             focal = focal / self.downsample
             self.focal = (focal, focal)
-            self.K = np.array([[focal, 0 , cx],
-                                        [0, focal, cy],
-                                        [0, 0, 1]]).astype(np.float32)
+            self.K = np.array([ [focal, 0 ,    cx],
+                                [0,     focal, cy],
+                                [0,     0,     1]]).astype(np.float32)
             poses = np.concatenate([poses[..., :1], poses[..., 1:2], poses[..., 2:3], poses[..., 3:4]], -1)
         else: 
             # load poses
@@ -139,9 +161,9 @@ class EndoNeRF_Dataset(object):
             H, W, focal = poses[0, :, -1]
             focal = focal / self.downsample
             self.focal = (focal, focal)
-            self.K = np.array([[focal, 0 , W//2],
-                                        [0, focal, H//2],
-                                        [0, 0, 1]]).astype(np.float32)
+            self.K = np.array([[focal, 0 ,    W//2],
+                               [0,     focal, H//2],
+                               [0,     0,     1]]).astype(np.float32)
             poses = np.concatenate([poses[..., :1], -poses[..., 1:2], -poses[..., 2:3], poses[..., 3:4]], -1)
         
         # prepare poses
@@ -180,11 +202,17 @@ class EndoNeRF_Dataset(object):
         elif split == 'test': idxs = self.test_idxs
         else:
             idxs = self.video_idxs
-        
+
+        near =0.01
+        far  = 120
+
         for idx in tqdm(idxs):
+            image_path = self.image_paths[idx]
+            image_name = image_path.split('/')[-2:]
+        
             # mask / depth
             mask_path = self.masks_paths[idx]
-            mask = Image.open(mask_path)
+            mask      = Image.open(mask_path)
             # StereoMIS 
             if 'stereo_' in self.root_dir:
                 mask = np.array(mask)
@@ -209,9 +237,19 @@ class EndoNeRF_Dataset(object):
             # fov
             FovX = focal2fov(self.focal[0], self.img_wh[0])
             FovY = focal2fov(self.focal[1], self.img_wh[1])
-            cameras.append(Camera(colmap_id=idx, R=R, T=T, FoVx=FovX, FoVy=FovY,image=image, depth=depth, mask=mask, gt_alpha_mask=None,
-                          image_name=f"{idx}", uid=idx, data_device=torch.device("cuda"), time=time,
-                          Znear=None, Zfar=None, K=self.K, h=self.img_wh[1], w=self.img_wh[0]))
+            # orginal
+            # cameras.append(Camera(colmap_id=idx, R=R, T=T, FoVx=FovX, FoVy=FovY,image=image, depth=depth, mask=mask, gt_alpha_mask=None,
+            #               image_name=f"{idx}", uid=idx, data_device=torch.device("cuda"), time=time,
+            #               Znear=None, Zfar=None, K=self.K, h=self.img_wh[1], w=self.img_wh[0]))
+            # ekko
+            if idx == 0:
+                cameras.append(CameraInfo(uid=0, R=R, T=T, FovX=FovX, FovY=FovY, image=image, image_path=image_path,
+                        image_name=image_name, width=self.img_wh[0],height=self.img_wh[1],near=near,far=far,timestamp=time,
+                        pose=1, hpdirecitons=1,cxr=0.0,cyr=0.0))
+            else:
+                cameras.append(CameraInfo(uid=0, R=R, T=T, FovX=FovX, FovY=FovY, image=image, image_path=image_path,
+                        image_name=image_name, width=self.img_wh[0],height=self.img_wh[1],near=near,far=far,timestamp=time,
+                        pose=None, hpdirecitons=None,cxr=0.0,cyr=0.0))
         return cameras
     
     def filling_pts_colors(self, filling_mask, ref_depth, ref_image):
