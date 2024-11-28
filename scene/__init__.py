@@ -56,9 +56,9 @@ class Scene:
             scene_info = sceneLoadTypeCallbacks["Technicolor"](args.source_path, args.images, args.eval, duration=50, testonly=testonly)
         elif loader == "nerfies":
             scene_info = sceneLoadTypeCallbacks["Nerfies"](args.source_path, False, args.eval)
-        # elif loader == "endonerf":
-        #     scene_info = sceneLoadTypeCallbacks["endonerf"](args.source_path)
-        #     print("Found poses_bounds.py and extra marks with EndoNeRf")
+        elif loader == "endonerf":
+            scene_info = sceneLoadTypeCallbacks["endonerf"](args.source_path)
+            print("Found poses_bounds.py and extra marks with EndoNeRf")
         else:
             assert False, "Could not recognize scene type!"
 

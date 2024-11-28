@@ -82,12 +82,6 @@ def normalize(v):
     """Normalize a vector."""
     return v / np.linalg.norm(v)
 
-
-
-
-
-
-
 class EndoNeRF_Dataset(object):
     def __init__(
         self,

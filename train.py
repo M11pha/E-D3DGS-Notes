@@ -58,12 +58,15 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     first_iter += 1
 
     train_cams = scene.getTrainCameras()
+    # print("here")
+    # print(train_cams)
+    # print("here")
     test_cams = scene.getTestCameras()
     video_cams = None
 
     num_traincams = 1
     if dataset.loader != 'dynerf': # for multi-view setting
-        num_traincams = int(len(train_cams) / scene.maxtime)
+        num_traincams = int(len(train_cams) / scene.maxtime) # maxtime 是一个场景的z总帧数
     
         camera_centers = []
         for i in range(num_traincams):
@@ -82,7 +85,7 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
     else:  # n3v, technicolor, etc.
         loss_list = np.zeros([max(cam_no_list) + 1, scene.maxtime])
         for c in cam_no_list:
-            loss_list[c] = 100
+            loss_list[c] = 100 
 
     ssim_cnt = 0
     sampled_frame_no = None
@@ -93,6 +96,10 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
         train_cams = sorted(train_cams, key=lambda x: (x.cam_no, x.frame_no))
 
     viewpoint_stack = train_cams
+    # print("here")
+    # for i in viewpoint_stack:
+    #     print(i.image_name)
+    # print("here")
     method = None
 
     start_time = time()
@@ -109,8 +116,15 @@ def scene_reconstruction(dataset, opt, hyper, pipe, testing_iterations, saving_i
         ### Instead of the complex process below, simply training on random frames will also work well. If you follow this, comment out the `train_cams` sorting process above.
         if dataset.loader == 'dynerf':
             frame_set = np.random.choice(range(math.ceil(len(viewpoint_stack) / 2)), size=max(opt.batch_size // 2, 1))
+            # print(frame_set)
             viewpoint_cams = [viewpoint_stack[(f*2) % scene.maxtime] for f in frame_set] + \
                              [viewpoint_stack[(f*2+1) % scene.maxtime] for f in frame_set]
+            # if iteration == 1:
+            #     print(frame_set)
+            #     print("here")
+            #     for i in viewpoint_cams:
+            #         print(i.image_name)
+
         else:
             # Pick camera
             method = "random" if iteration < opt.random_until or iteration % 2 == 1 else "by_error"

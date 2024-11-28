@@ -343,9 +343,8 @@ def cameraList_from_camInfosHyper(cam_infos, resolution_scale, args):
     for id, c in tqdm(enumerate(cam_infos), total=len(cam_infos)):
         camera_list.append(loadCamHyper(args, id, c, resolution_scale))
 
-
-
     return camera_list
+
 def cameraList_from_camInfosv2nogt(cam_infos, resolution_scale, args):
     camera_list = []
 
